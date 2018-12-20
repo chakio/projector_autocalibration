@@ -1,0 +1,4 @@
+<launch>
+  <node name="Projector_TF" pkg="tf" type="static_transform_publisher" output="screen" args="0.0 0.04 0.00 0.0 0 0 /camera_depth_optical_frame /projector_frame 100" />
+  <node pkg="projector_autocalibration" name="auto_calibration" type="auto_calibration" output="screen"/>
+</launch>

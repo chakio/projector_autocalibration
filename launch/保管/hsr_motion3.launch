@@ -1,0 +1,217 @@
+<launch>
+
+	// hsrb/** は元々HSR標準のパラメータであることを示す
+	// hsr/**は独自に作成したパラメータである
+
+	// Settings -----------------------------------------------------------------
+	<arg name="navigation_max_speed"		default="0.50" />
+	<arg name="navigation_max_turn"			default="0.80" />
+	<arg name="joy_max_speed"				    default="0.50" />
+	<arg name="joy_max_turn"				    default="1" />
+
+  
+  <!-- provide map -->
+  <node name="map_server" pkg="map_server" type="map_server"
+      args="$(find printeps_hsr_modules)/map/map.yaml" respawn="false" >
+      <param name="use_map_topic"   value="true"/>
+      <param name="frame_id" 				value="map" />
+  </node> 
+  
+  <!-- additional LRF -->
+  <node ns="hsr_urg2" name="hsr_urg2" pkg="urg_node"  type="urg_node" output="screen">
+      <param name="ip_address"   value="192.168.1.28"/>
+      <param name="frame_id" 			value="hsr_urg2" />
+      <param name="angle_min"    type="double"    value="-2.1806" />
+      <param name="angle_max"   type="double"     value="2.1806" />
+      <remap from="scan" to="base_scan2"/>
+  </node> 
+  <node pkg="tf" type="static_transform_publisher" name="robot_to_urg2" args="-0.27 0 0.23 3.14 0 0 /base_link /hsr_urg2 10" />
+
+  <!-- localizaion -->
+  <node pkg="amcl" type="amcl" name="hsr_amcl" output="screen">
+      <remap from="scan" to="hsrb/base_scan" />
+      <rosparam file="$(find printeps_hsr_modules)/config/amcl.yaml" command="load" />
+  </node>
+
+
+  <!-- Joystick motion -->
+  <arg name="joy_dev" default="/dev/input/js0" />
+
+  <node pkg="joy" type="joy_node" name="joy_node">
+    <param name="dev" value="$(arg joy_dev)" />
+    <param name="autorepeat_rate" value="5" />
+  </node>
+
+  <node pkg="printeps_hsr_modules" name="teleop_twist_joy" type="teleop_twist_joy.py" >
+ 		<param name="max_speed"	value="$(arg joy_max_speed)" />
+		<param name="max_turn"	value="$(arg joy_max_turn)" />
+  </node>
+
+
+	<!-- AR -->
+  <arg name="marker_size" default="5.5" />
+  <arg name="max_new_marker_error" default="0.08" />
+  <arg name="max_track_error" default="0.2" />
+  <arg name="cam_ns" default="/hsrb/head_rgbd_sensor/rgb" />
+  <arg name="cam_image_topic" default="/$(arg cam_ns)/image_raw" />
+  <arg name="cam_info_topic" default="/$(arg cam_ns)/camera_info" />
+  <arg name="output_frame" default="/head_rgbd_sensor_link" />
+  <arg name="max_frequency" default="30" />
+  <arg name="marker_resolution" default="6" />
+  <arg name="marker_margin" default="1" />
+
+  <node name="ar_track" pkg="ar_track_alvar" type="individualMarkersNoKinect"
+    args="$(arg marker_size) $(arg max_new_marker_error)
+          $(arg max_track_error) $(arg cam_image_topic) $(arg cam_info_topic)
+          $(arg output_frame) $(arg max_frequency)
+          $(arg marker_resolution) $(arg marker_margin)" />
+
+
+  <!-- Display -->
+  <!-- <node pkg="rviz" type="rviz" name="rviz" args="-d $(find printeps_hsr_modules)/rviz/hsr_motion.rviz" /> -->
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find printeps_hsr_modules)/rviz/hsr_motion.rviz" />
+
+	<!-- HSR Motion service -->
+  <node pkg="printeps_hsr_modules" name="hsr_navigation" type="hsr_navigation.py" output="screen">
+    <param name="max_speed"				value="$(arg navigation_max_speed)" />
+		<param name="max_turn"				value="$(arg navigation_max_turn)" />
+  	<param name="use_virtual_object"	type="bool" value="True" />
+  </node>
+	<node pkg="printeps_hsr_modules" name="hsr_say" type="hsr_say.py" output="screen"/>
+  <node pkg="printeps_hsr_modules" name="hsr_hold_object" type="hsr_hold_object.py" output="screen"/>
+  <node pkg="printeps_hsr_modules" name="hsr_pick_up_object" type="hsr_pick_up_object.py" output="screen"/>
+  <node pkg="printeps_hsr_modules" name="hsr_place_object" type="hsr_place_object.py" output="screen"/>
+  <node pkg="printeps_hsr_modules" name="hsr_release_object" type="hsr_release_object.py" output="screen"/>
+  <node pkg="printeps_hsr_modules" name="hsr_pick_and_place" type="hsr_pick_and_place.py" output="screen"/>
+  <node pkg="printeps_hsr_modules" name="hsr_carry" type="hsr_carry.py" output="screen"/>
+  <node pkg="printeps_hsr_modules" name="hsr_hand_release" type="hsr_hand_release.py" output="screen"/>
+  <node pkg="printeps_hsr_modules" name="pathGeneratorService" type="pathGeneratorService" output="screen"/>
+  <!--node pkg="printeps_hsr_modules" name="setTargetPos" type="setTargetPos" output="screen"/-->
+  <node pkg="printeps_hsr_modules" name="hsr_trace" type="hsr_trace.py" output="screen"/>
+  <node pkg="printeps_hsr_modules" name="hsr_globalNavigation" type="hsr_globalNavigation" output="screen"/>
+  <node pkg="printeps_hsr_modules" name="hsr_openpose" type="hsr_openpose" output="screen"/>
+  <node pkg="printeps_hsr_modules" name="hsr_static_obstacle_server" type="hsr_static_obstacle_server" output="screen"/>
+  <node pkg="printeps_hsr_modules" name="hsr_call_pcbattery" type="hsr_call_pcbattery.py" output="screen"/>
+  <node pkg="openpose_ros" name="openpose_wrapoer" type="openpose_wrapper.py" output="screen"/>
+
+  <!-- opnni2_launch-->
+
+  <arg name="camera" default="camera"
+       doc="'camera' should uniquely identify the device. All topics are pushed down
+            into the 'camera' namespace, and it is prepended to tf frame ids." />
+  <arg name="rgb_frame_id"   default="$(arg camera)_rgb_optical_frame" />
+  <arg name="depth_frame_id" default="$(arg camera)_depth_optical_frame" />
+
+  <arg name="device_id" default="#1"
+       doc="device_id can have the following formats:
+            '#1'  : the first device found
+            '2@X' : the Xth device on USB bus 2"/>
+
+  <arg name="id_manufacturer" default="1d27"
+       doc="Vendor ID of the sensor (maintained at http://www.linux-usb.org/usb-ids.html). Default: ASUS."/>
+  <arg name="id_product" default="0601"
+       doc="Product ID of the sensor. Default: Xtion."/>
+
+  <arg name="rgb_camera_info_url"   default=""
+       doc="By default, calibrations are stored to file://${ROS_HOME}/camera_info/${NAME}.yaml,
+            where ${NAME} is of the form '[rgb|depth]_[serial#]', e.g. 'depth_B00367707227042B'.
+            See camera_info_manager docs for calibration URL details." />
+  <arg name="depth_camera_info_url" default="" />
+
+  <arg name="depth_registration" default="false"
+       doc="Hardware depth registration" />
+
+  <!-- Driver parameters -->
+  <arg name="color_depth_synchronization"     default="false" />
+  <arg name="auto_exposure"                   default="true" />
+  <arg name="auto_white_balance"              default="true" />
+
+  <!-- Arguments for remapping all device namespaces -->
+  <arg name="rgb"              default="rgb" />
+  <arg name="ir"               default="ir" />
+  <arg name="depth"            default="depth" />
+
+  <arg name="load_driver" default="true"
+       doc="Optionally suppress loading the driver nodelet and/or publishing the default tf
+       tree. Useful if you are playing back recorded raw data from a bag, or are
+       supplying a more accurate tf tree from calibration." />
+  <arg name="publish_tf" default="true" />
+  <!-- Processing Modules -->
+  <arg name="rgb_processing"                  default="true"  />
+  <arg name="debayer_processing"              default="false" />
+  <arg name="ir_processing"                   default="false" />
+  <arg name="depth_processing"                default="true" />
+  <arg name="depth_registered_processing"     default="true" />
+  <arg name="disparity_processing"            default="false" />
+  <arg name="disparity_registered_processing" default="false" />
+  <arg name="hw_registered_processing"        default="true" if="$(arg depth_registration)" />
+  <arg name="sw_registered_processing"        default="false" if="$(arg depth_registration)" />
+  <arg name="hw_registered_processing"        default="false" unless="$(arg depth_registration)" />
+  <arg name="sw_registered_processing"        default="true" unless="$(arg depth_registration)" />
+
+  <arg name="respawn" default="false"
+       doc="Disable bond topics by default" />
+
+  <arg name="num_worker_threads" default="4"
+       doc="Worker threads for the nodelet manager" />
+
+  <!-- Push down all topics/nodelets into "camera" namespace -->
+  <group ns="$(arg camera)">
+  
+	  <!-- Start nodelet manager -->
+	  <arg name="manager" value="$(arg camera)_nodelet_manager" />
+	  <arg name="debug" default="false" /> <!-- Run manager in GDB? -->
+	  <include file="$(find rgbd_launch)/launch/includes/manager.launch.xml">
+	    <arg name="name" value="$(arg manager)" />
+	    <arg name="debug" value="$(arg debug)" />
+	    <arg name="num_worker_threads"  value="$(arg num_worker_threads)" />
+	  </include>
+
+    <!-- Load driver -->
+    <include if="$(arg load_driver)"
+	     file="$(find openni2_launch)/launch/includes/device.launch.xml">
+      <arg name="manager"                         value="$(arg manager)" />
+      <arg name="device_id"                       value="$(arg device_id)" />
+      <arg name="id_manufacturer"                 value="$(arg id_manufacturer)" />
+      <arg name="id_product"                      value="$(arg id_product)" />
+      <arg name="rgb_frame_id"                    value="$(arg rgb_frame_id)" />
+      <arg name="depth_frame_id"                  value="$(arg depth_frame_id)" />
+      <arg name="rgb_camera_info_url"             value="$(arg rgb_camera_info_url)" />
+      <arg name="depth_camera_info_url"           value="$(arg depth_camera_info_url)" />
+      <arg name="rgb"                             value="$(arg rgb)" />
+      <arg name="ir"                              value="$(arg ir)" />
+      <arg name="depth"                           value="$(arg depth)" />
+      <arg name="respawn"                         value="$(arg respawn)" />
+      <arg name="depth_registration"              value="$(arg depth_registration)" />
+      <arg name="color_depth_synchronization"     value="$(arg color_depth_synchronization)" />
+      <arg name="auto_exposure"                   value="$(arg auto_exposure)" />
+      <arg name="auto_white_balance"              value="$(arg auto_white_balance)" />
+    </include>
+
+    <!-- Load standard constellation of processing nodelets -->
+    <include file="$(find rgbd_launch)/launch/includes/processing.launch.xml">
+      <arg name="manager"                         value="$(arg manager)" />
+      <arg name="rgb"                             value="$(arg rgb)" />
+      <arg name="ir"                              value="$(arg ir)" />
+      <arg name="depth"                           value="$(arg depth)" />
+      <arg name="respawn"                         value="$(arg respawn)" />
+      <arg name="rgb_processing"                  value="$(arg rgb_processing)" />
+      <arg name="debayer_processing"              value="$(arg debayer_processing)" />
+      <arg name="ir_processing"                   value="$(arg ir_processing)" />
+      <arg name="depth_processing"                value="$(arg depth_processing)" />
+      <arg name="depth_registered_processing"     value="$(arg depth_registered_processing)" />
+      <arg name="disparity_processing"            value="$(arg disparity_processing)" />
+      <arg name="disparity_registered_processing" value="$(arg disparity_registered_processing)" />
+      <arg name="hw_registered_processing"        value="$(arg hw_registered_processing)" />
+      <arg name="sw_registered_processing"        value="$(arg sw_registered_processing)" />
+    </include>
+
+  </group> <!-- camera -->
+
+  <!-- Load reasonable defaults for the relative pose between cameras -->
+  <include if="$(arg publish_tf)"
+	   file="$(find rgbd_launch)/launch/kinect_frames.launch">
+    <arg name="camera" value="$(arg camera)" />
+  </include>
+  <node name="Xtion_TF" pkg="tf" type="static_transform_publisher" output="screen" args="0.0 -0.03 -0.05 0.0 4.71 1.57 /head_center_camera_frame /camera_link 100" />
+</launch>

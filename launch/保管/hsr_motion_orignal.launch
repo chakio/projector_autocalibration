@@ -1,0 +1,81 @@
+<launch>
+
+	// hsrb/** は元々HSR標準のパラメータであることを示す
+	// hsr/**は独自に作成したパラメータである
+
+	// Settings -----------------------------------------------------------------
+	<arg name="navigation_max_speed"		default="0.40" />
+	<arg name="navigation_max_turn"			default="0.80" />
+	<arg name="joy_max_speed"				    default="0.40" />
+	<arg name="joy_max_turn"				    default="0.6" />
+
+  
+  <!-- provide map -->
+  <node name="map_server" pkg="map_server" type="map_server"
+      args="$(find printeps_hsr_modules)/map/map.yaml" respawn="false" >
+      <param name="use_map_topic"   value="true"/>
+      <param name="frame_id" 				value="map" />
+  </node> 
+  
+
+  <!-- localizaion -->
+  <node pkg="amcl" type="amcl" name="hsr_amcl" output="screen">
+      <remap from="scan" to="hsrb/base_scan" />
+      <rosparam file="$(find printeps_hsr_modules)/config/amcl.yaml" command="load" />
+  </node>
+
+
+  <!-- Joystick motion -->
+  <arg name="joy_dev" default="/dev/input/js0" />
+
+  <node pkg="joy" type="joy_node" name="joy_node">
+    <param name="dev" value="$(arg joy_dev)" />
+    <param name="autorepeat_rate" value="5" />
+  </node>
+
+  <node pkg="printeps_hsr_modules" name="teleop_twist_joy" type="teleop_twist_joy.py" >
+ 		<param name="max_speed"	value="$(arg joy_max_speed)" />
+		<param name="max_turn"	value="$(arg joy_max_turn)" />
+  </node>
+
+
+	<!-- AR -->
+  <arg name="marker_size" default="5.5" />
+  <arg name="max_new_marker_error" default="0.08" />
+  <arg name="max_track_error" default="0.2" />
+  <arg name="cam_ns" default="/hsrb/head_rgbd_sensor/rgb" />
+  <arg name="cam_image_topic" default="/$(arg cam_ns)/image_raw" />
+  <arg name="cam_info_topic" default="/$(arg cam_ns)/camera_info" />
+  <arg name="output_frame" default="/head_rgbd_sensor_link" />
+  <arg name="max_frequency" default="30" />
+  <arg name="marker_resolution" default="6" />
+  <arg name="marker_margin" default="1" />
+
+  <node name="ar_track" pkg="ar_track_alvar" type="individualMarkersNoKinect"
+    args="$(arg marker_size) $(arg max_new_marker_error)
+          $(arg max_track_error) $(arg cam_image_topic) $(arg cam_info_topic)
+          $(arg output_frame) $(arg max_frequency)
+          $(arg marker_resolution) $(arg marker_margin)" />
+
+
+  <!-- Display -->
+  <!-- <node pkg="rviz" type="rviz" name="rviz" args="-d $(find printeps_hsr_modules)/rviz/hsr_motion.rviz" /> -->
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find printeps_hsr_modules)/rviz/hsr_motion.rviz" />
+
+	<!-- HSR Motion service -->
+  <node pkg="printeps_hsr_modules" name="hsr_navigation" type="hsr_navigation.py" output="screen">
+    <param name="max_speed"				value="$(arg navigation_max_speed)" />
+		<param name="max_turn"				value="$(arg navigation_max_turn)" />
+  	<param name="use_virtual_object"	type="bool" value="True" />
+  </node>
+	<node pkg="printeps_hsr_modules" name="hsr_say" type="hsr_say.py" output="screen"/>
+  <node pkg="printeps_hsr_modules" name="hsr_hold_object" type="hsr_hold_object.py" output="screen"/>
+  <node pkg="printeps_hsr_modules" name="hsr_pick_up_object" type="hsr_pick_up_object.py" output="screen"/>
+  <node pkg="printeps_hsr_modules" name="hsr_place_object" type="hsr_place_object.py" output="screen"/>
+  <node pkg="printeps_hsr_modules" name="hsr_release_object" type="hsr_release_object.py" output="screen"/>
+  <node pkg="printeps_hsr_modules" name="hsr_pick_and_place" type="hsr_pick_and_place.py" output="screen"/>
+  <node pkg="printeps_hsr_modules" name="hsr_carry" type="hsr_carry.py" output="screen"/>
+  <node pkg="printeps_hsr_modules" name="hsr_hand_release" type="hsr_hand_release.py" output="screen"/>
+  
+
+</launch>

@@ -1,0 +1,26 @@
+<launch>
+
+	// hsrb/** は元々HSR標準のパラメータであることを示す
+	// hsr/**は独自に作成したパラメータである
+
+	// Settings -----------------------------------------------------------------
+
+    <!-- provide map -->
+  <node name="map_server" pkg="map_server" type="map_server"
+      args="$(find printeps_hsr_modules)/map/map.yaml" respawn="false" >
+      <param name="use_map_topic"   value="true"/>
+      <param name="frame_id" 				value="map" />
+  </node> 
+  
+
+  <!-- localizaion -->
+  <node pkg="amcl" type="amcl" name="hsr_amcl" output="screen">
+      <remap from="scan" to="hsrb/base_scan" />
+      <rosparam file="$(find printeps_hsr_modules)/config/amcl.yaml" command="load" />
+  </node>
+  
+ <!-- Display -->
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find printeps_hsr_modules)/rviz/hsr_motion.rviz" />
+  
+
+</launch>

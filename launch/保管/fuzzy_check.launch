@@ -1,0 +1,15 @@
+<launch>
+
+	<node pkg="jsk_rqt_plugins" type="rqt_histogram_plot" name="fuzzy_area_plot"
+				args="/fuzzy_area/data"/>
+
+	<node pkg="jsk_rqt_plugins" type="rqt_histogram_plot" name="mbsp_t_goal_plot"
+				args="/mbsp_t_goal/data"/>
+
+	<node pkg="jsk_rqt_plugins" type="rqt_histogram_plot" name="mbsp_t_obst_plot"
+				args="/mbsp_t_obst/data"/>
+
+	<node pkg="jsk_rqt_plugins" type="rqt_histogram_plot" name="mbsp_t_mix_plot"
+				args="/mbsp_t_mix/data"/>
+
+</launch>

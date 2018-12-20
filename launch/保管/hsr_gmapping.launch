@@ -1,0 +1,109 @@
+<launch>
+	// Settings -----------------------------------------------------------------
+	<arg name="scan_topic" 		default="/hsrb/base_scan"	/>
+	<arg name="base_frame"		default="base_link"	/>
+	<arg name="odom_frame"		default="odom"	/>
+	<arg name="map_frame"		default="map"	/>
+
+	<arg name="joy_max_speed"	default="0.10" />
+	<arg name="joy_max_turn"	default="0.15" />
+
+
+
+	// Joystic Launch --------------------------------------------------
+	  <!-- Joystick motion -->
+	<arg name="joy_dev" default="/dev/input/js0" />
+
+	<node pkg="joy" type="joy_node" name="joy_node">
+		<param name="dev" value="$(arg joy_dev)" />
+		<param name="autorepeat_rate" value="5" />
+	</node>
+	<node pkg="printeps_hsr_modules" name="teleop_twist_joy" type="teleop_twist_joy.py" >
+			<param name="max_speed"	value="$(arg joy_max_speed)" />
+			<param name="max_turn"	value="$(arg joy_max_turn)" />
+	</node>
+
+
+	// Gmapping Node ---------------------------------------------------
+	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
+		<!-- LRSトピック名の変更 -->
+		<remap from="scan" to="$(arg scan_topic)" />
+
+		<!-- ベースフレーム・オドメトリフレーム設定 -->
+		<param name="base_frame"	value="$(arg base_frame)" />
+		<param name="odom_frame"	value="$(arg odom_frame)" />
+		<param name="map_frame"		value="$(arg map_frame)" />
+
+		<!-- 環境地図更新間隔 [s] -->
+		<param name="map_update_interval" value="1.0"	/>
+
+		<!-- Laser最大使用距離[m] -->
+		<param name = "maxUrange" value = "20.0" />
+		<!-- Laser最大到達距離[m] -->
+		<param name = "maxRrange" value = "20.0" />
+		<!-- Laser対応探索の標準偏差 -->
+		<param name = "sigma" value = "0.05" />
+		<!-- Laser対応探索のウィンドウサイズ -->
+		<param name = "kernelSize" value = "1" />
+		<!-- 初期探索ステップ 移動 -->
+		<param name = "lstep" value = "0.05" />
+		<!-- 初期探索ステップ 回転 -->
+		<param name = "astep" value = "0.05" />
+		<!-- スキャンマッチングの繰り返し回数 -->
+		<param name = "iterations" value = "5" />
+		<!-- ビーム尤度計算の標準偏差 -->
+		<param name = "lsigma" value = "0.075" />
+		<!-- 尤度平滑化ゲイン -->
+		<param name = "ogain" value = "3.0" />
+		<!-- Laserスキップ数 -->
+		<param name = "lskip" value = "0" />
+
+		<!-- 最小スコア（最大600） -->
+		<param name = "minimumScore" value = "300" />
+
+		<!-- オドメトリエラー（移動による移動エラー） -->
+		<param name = "srr" 	value = "0.1" />
+		<!-- オドメトリエラー（回転による移動エラー） -->
+		<param name = "srt" 	value = "0.1" />
+		<!-- オドメトリエラー（移動による回転エラー） -->
+		<param name = "str" 	value = "0.1" />
+		<!-- オドメトリエラー（回転による回転エラー） -->
+		<param name = "stt" 	value = "0.1" />
+
+		<!-- 環境地図更新を行う移動距離[m] -->
+		<param name = "linearUpdate" value = "0.10" />
+		<!-- 環境地図更新を行う回転角度[rad] -->
+		<param name = "angularUpdate" value = "0.10" />
+
+		<!-- リサンプルリングを行う閾値 -->
+		<param name = "resampleThreshold" value = "0.5" />
+
+		<!-- パーティクル数 -->
+		<param name="particles"	value="100"	/>
+
+		<!-- 環境地図のx座標最小値[m] -->
+		<param name="xmin"  	value="-20.0"	/>
+		<!-- 環境地図のx座標最大値[m] -->
+		<param name="xmax"  	value="20.0"	/>
+		<!-- 環境地図のy座標最小値[m] -->
+		<param name="ymin"  	value="-20.0"	/>
+		<!-- 環境地図のy座標最大値[m] -->
+		<param name="ymax"  	value="20.0"	/>
+		<!-- 環境地図の格子サイズ[m] -->
+		<param name="delta" 	value="0.05"	/>
+
+		<!-- 尤度計算の範囲 (移動) -->
+		<param name = "llsamplerange" value = "0.06" />
+		<!-- 尤度計算のステップ幅 (移動) -->
+		<param name = "llsamplestep" value = "0.06" />
+		<!-- 尤度計算の範囲 (回転) -->
+		<param name = "lasamplerange" value = "0.005" />
+		<!-- 尤度計算のステップ幅 (回転) -->
+		<param name = "lasamplestep" value = "0.005" />
+
+	</node>
+
+	// Display ---------------------------------------------------------
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find printeps_hsr_modules)/rviz/hsr_gmapping.rviz" />
+
+</launch>
