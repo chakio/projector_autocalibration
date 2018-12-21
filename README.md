@@ -25,7 +25,7 @@
 <img src="https://github.com/chakio/projector_autocalibration/blob/master/media/software_component.png" width="1000px"> 
 
 
-#### Marker less calibration
+### Marker less calibration
 3Dカメラを用いた平面検出をした後に、カメラと平面の相対位置と投影したい画像サイズに基づき  
 その平面に対してどこに投影するかを決定しています。
 そして、その位置に投影できるように画像をアフィン変換した後に投影します。  
@@ -43,5 +43,11 @@ openFrameworksをROS化し、点群取得と処理はROS、画像変形と投影
 
 * （openpose_wrapper.py というサンプルコードを改変し、ros化したが、スレッドが別れないようにする工夫が必要です。（あやふや））
 
+
 ### Useage
-* ```rosrun openpose_ros openpose_wrapper.py```
+* ```roslaunch openni2_launch openni2.launch```
+* ```roslaunch projector_autocalibration_launch auto_calibration.launch```
+カレントディレクトリを
+```hogehoge/projector_autocalibration/ofxTransformImage```
+に移動した後に
+* ```./bin/ofTransformImage```
