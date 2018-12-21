@@ -37,17 +37,20 @@ openFrameworksをROS化し、点群取得と処理はROS、画像変形と投影
 * 画像処理 : ofxOpenCV
 
 ### Setup
-* OpenPoseを[インストール方法](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/installation.md)に従いインストールした後に、  [Python API](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/installation.md#python-api)をインストール
+#### OpenNI2
+* ```$ sudo apt-get install ros-kinetic-rgbd-launch ros-kinetic-openni2-camera ros-kinetic-openni2-launch```  
 
-* （C++ APIなどの選択肢もあるが、CV::BridgeなどがOpencvのバージョンなどの問題でうごかなかった）
-
-* （openpose_wrapper.py というサンプルコードを改変し、ros化したが、スレッドが別れないようにする工夫が必要です。（あやふや））
+#### ROS×openFrameworks
+* [ubuntuでopenFrameworksの開発環境を構築する](https://qiita.com/nnn_anoken/items/b6834379e2eeeeae6793)
+* [vscodeでopenFrameworksの開発を行う環境構築](http://cvl-robot.hateblo.jp/entry/2018/01/24/113956)
+* [openFrameworksのROS対応](https://qiita.com/nnn_anoken/items/c3e32a450fe470fb19ab)  
+今後openFrameworksのROS対応を施したテンプレートをアップします
 
 
 ### Useage
 * ```roslaunch openni2_launch openni2.launch```
-* ```roslaunch projector_autocalibration_launch auto_calibration.launch```
-カレントディレクトリを
-```hogehoge/projector_autocalibration/ofxTransformImage```
-に移動した後に
+* ```roslaunch projector_autocalibration_launch auto_calibration.launch```  
+カレントディレクトリを  
+```hogehoge/projector_autocalibration/ofxTransformImage```  
+に移動した後に  
 * ```./bin/ofTransformImage```
