@@ -24,10 +24,12 @@
 
 <img src="https://github.com/chakio/projector_autocalibration/blob/master/media/software_component.png" width="1000px"> 
 
-マーカを使用する代わりに、  
+
+#### Marker less calibration
 3Dカメラを用いた平面検出をした後に、カメラと平面の相対位置と投影したい画像サイズに基づき  
 その平面に対してどこに投影するかを決定しています。
 そして、その位置に投影できるように画像をアフィン変換した後に投影します。  
+![result](https://github.com/chakio/projector_autocalibration/blob/master/media/plane_detection.gif) 
 
 openFrameworksをROS化し、点群取得と処理はROS、画像変形と投影はopenFrameworksで作成しています。  
 * 点群取得 : OpenNI
