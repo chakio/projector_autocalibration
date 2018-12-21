@@ -1,25 +1,29 @@
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 # projector_autocalibration
 ![result](https://github.com/chakio/projector_autocalibration/blob/master/media/auto_calibration.gif)  
-[OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose)のラッパーです。
+プロジェクターで投影する画像を自動補正します。
 
 ### Description
-ROSにてOpenPoseを用いた関節位置推定を行うためのプログラムです。  
-RGB-Dカメラを用いることで、関節位置の3次元座標を取得しています。  
-他にもいくつか機能がついていますので参考にしてみてください。
-
-### Feature
-* 想定使用法:ロボットにノートPCを搭載したうえでの、人の3次元関節位置推定
-* OpenPoseの3次元化：PCDの画素マッチングによる３次元座標取得
-* TFの管理：OpenPoseの処理時間の考慮
-* 出力：今回はsensor_msgs::Pointcloud2を使用(新規メッセージの作成は複数PC上でのSubscribeの際手間)。オリジナルのFieldを定義可能なためconfidenceなどもやりとり可能
+今後の情報提示方法ややアート分野での表現方法の拡張を見据えると、プロジェクターが自由に動きまわることが予期されます。  
+可動式プロジェクターを実現する上で問題となる事柄の一つとして、投影される画像の歪みを動的に補正することが挙げられます。   
+動的なプロジェクションマッピングの分野では、動的なキャリブレーション手法は多く検討されていますが、その多くはマーカを用いたものが多いです。  
+そこで、今回はマーカレスの動的キャリブレーションを検討してみました。  
 
 ### Environment
-* OpenPose : v1.3.0
+* OS : Ubuntu 16.04
 * ROS : kinetic  
+* openFrameworks :   v0.10.0
+* PC : Alienware 13 
 
-* Robot : Toyota HSR
-* PC : Alienware 13
+* visualstudio code
+
+### Hardware composition
+* Projector : ASUS P3B
+* 3D camera : ASUS Xtion PRO LIVE
+<img src="https://github.com/chakio/projector_autocalibration/blob/master/media/hardware_component.jpg" width="500px"> 
+
+### Software composition
+<img src="https://github.com/chakio/projector_autocalibration/blob/master/media/software_component.jpg" width="500px"> 
 
 ### Setup
 * OpenPoseを[インストール方法](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/installation.md)に従いインストールした後に、  [Python API](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/installation.md#python-api)をインストール
