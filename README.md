@@ -49,7 +49,8 @@ openFrameworksをROS化し、点群取得と処理はROS、画像変形と投影
 
 ### Useage
 * ```roslaunch openni2_launch openni2.launch```
-* ```roslaunch projector_autocalibration_launch auto_calibration.launch```  
+* ```roslaunch projector_autocalibration_launch auto_calibration.launch```   
+
 カレントディレクトリを  
 ```hogehoge/projector_autocalibration/ofxTransformImage```  
 に移動した後に  
