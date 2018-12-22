@@ -52,13 +52,13 @@ public:
   AutoCalibrator()
   {
     // subscribe ROS topics
-    _sub_pcd   = _nh.subscribe("/camera/depth/points", 1, &AutoCalibrator::savePCD, this);
+    _sub_pcd   = _nh.subscribe("/camera/depth/points", 1, &AutoCalibrator::processPCD, this);
     ROS_INFO("Listening for incoming data on topic /hsrb/head_rgbd_sensor/depth_registered/rectified_points ...");
   }
   ~AutoCalibrator() {}
   
   // get points
-  void savePCD(const sensor_msgs::PointCloud2ConstPtr &input_cloud)
+  void processPCD(const sensor_msgs::PointCloud2ConstPtr &input_cloud)
   {
     // Container for original & filtered data
     pcl::PCLPointCloud2* cloud = new pcl::PCLPointCloud2;
@@ -93,10 +93,12 @@ public:
 
     //Get projection area
     if(inliers->indices.size() == 0){
+      //平面検出できなかったら終了
       std::cerr << "Could not estimate a planar model for the given data" << std::endl;
     }
     else
     {
+      //平面検出できた場合、平面の方程式基づき投影するエリアの計算
       double planeCoefficients[4];
       for(int i=0;i<4;i++)
       {
@@ -105,6 +107,8 @@ public:
       this->getProjectionArea(planeCoefficients);
     }
   }
+
+  //投影するエリアの取得から投影変換まで
   void getProjectionArea(double *planeCoefficients)
   {
     Vector3f c;//平面とカメラの光軸との交点
@@ -122,6 +126,7 @@ public:
     rot = AngleAxisf(M_PI/2,ey);//法線軸周りで90°回転する回転行列
     ez = rot*n;
 
+    //実平面上の投影する四角形の各頂点の座標の計算
     double  sideLength = 0.2; //一辺の長さ(0.20[m]))
     Vector3f V1;//四角形の各頂点
     Vector3f V2;
@@ -131,25 +136,6 @@ public:
     V2 = c + sideLength*ey + sideLength/2*ez;
     V3 = c + sideLength/2*ez;
     V4 = c - sideLength/2*ez;
-
-    /*
-    tf::Transform transform;  
-    transform.setOrigin( tf::Vector3(V1(0), V1(1), V1(2)) );
-    tf::Quaternion quaternion;
-    quaternion.setRPY(0, 0, 0);
-    transform.setRotation(quaternion);
-    transform.setOrigin( tf::Vector3(V1(0), V1(1), V1(2)) );
-    tfBroadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "camera_depth_optical_frame", "V1"));
-
-    transform.setOrigin( tf::Vector3(V2(0), V2(1), V2(2)) );
-    tfBroadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "camera_depth_optical_frame", "V2"));
-
-    transform.setOrigin( tf::Vector3(V3(0), V3(1), V3(2)) );
-    tfBroadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "camera_depth_optical_frame", "V3"));
-
-    transform.setOrigin( tf::Vector3(V4(0), V4(1), V4(2)) );
-    tfBroadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "camera_depth_optical_frame", "V4"));
-    */
 
     //プロジェクター座標系に座標変換
     //動作周波数向上のため、変換にはTFを使用しない
@@ -193,6 +179,8 @@ public:
     transform.setOrigin( tf::Vector3(P4(0), P4(1), P4(2)) );
     tfBroadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "projector_frame", "P4"));
 
+    //  topic /vertexで投影変換後の座標をpublish
+    //アフィン変換以降はofxTransformImageのノードで行う
     double projection_distance=0.9;
     std_msgs::Float32MultiArray vertexs;
     vertexs.data.push_back(P1(0)/P1(2)*projection_distance);
