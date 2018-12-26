@@ -41,10 +41,7 @@ openFrameworksをROS化し、点群取得と処理はROS、画像変形と投影
 * ```$ sudo apt-get install ros-kinetic-rgbd-launch ros-kinetic-openni2-camera ros-kinetic-openni2-launch```  
 
 #### ROS×openFrameworks
-* [ubuntuでopenFrameworksの開発環境を構築する](https://qiita.com/nnn_anoken/items/b6834379e2eeeeae6793)
-* [vscodeでopenFrameworksの開発を行う環境構築](http://cvl-robot.hateblo.jp/entry/2018/01/24/113956)
-* [openFrameworksのROS対応](https://qiita.com/nnn_anoken/items/c3e32a450fe470fb19ab)  
-今後openFrameworksのROS対応を施したテンプレートをアップします
+* [openFrameworksのROS対応を施したテンプレートについて](https://github.com/chakio/ofxRosTemplate)
 
 
 ### Useage
