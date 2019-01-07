@@ -44,7 +44,7 @@ openFrameworksをROS化し、点群取得と処理はROS、画像変形と投影
 * [openFrameworksのROS対応を施したテンプレートについて](https://github.com/chakio/ofxRosTemplate)
 
 
-### Useage
+### Usage
 * ```roslaunch openni2_launch openni2.launch```
 * ```roslaunch projector_autocalibration_launch auto_calibration.launch```   
 
