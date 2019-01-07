@@ -45,7 +45,7 @@ openFrameworksを[ROS化](https://github.com/chakio/ofxRosTemplate)し、点群�
 * [openFrameworksのROS対応を施したテンプレートについて](https://github.com/chakio/ofxRosTemplate)
 
 
-### Useage
+### Usage
 * ```roslaunch openni2_launch openni2.launch```
 * ```roslaunch projector_autocalibration_launch auto_calibration.launch```   
 
